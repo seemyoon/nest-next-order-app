@@ -1,0 +1,22 @@
+services:
+  order-management-postgres:
+    image: postgres:16.1
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    environment:
+      POSTGRES_USER: '${POSTGRES_USER:-postgresuser}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-postgrespassword}'
+      POSTGRES_DB: '${POSTGRES_DB:-order-app}'
+    volumes:
+      - ./order-management-db:/ var/lib/postgresql/order-management
+
+  order-management-redis:
+    image: redis:7.2.3
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    command: >
+      --requirepass '${REDIS_PASSWORD:-redispassword}'
+    restart: unless-stopped
+
+volumes:
+  order-management-db:
