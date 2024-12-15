@@ -5,6 +5,10 @@ import { CurrentUser } from '../decorators/current-user.decorator';
 import { SkipAuth } from '../decorators/skip-auth.decorator';
 import { JwtRefreshGuard } from '../guards/jwt-refresh.guard';
 import { IUserData } from '../interfaces/user-data.interface';
+import { SignInReqDto } from '../models/dto/req/sign-in.req.dto';
+import { SignUpReqDto } from '../models/dto/req/sign-up.req.dto';
+import { AuthResDto } from '../models/dto/res/auth.res.dto';
+import { TokenPairResDto } from '../models/dto/res/token-pair.res.dto';
 import { AuthService } from '../services/auth.service';
 
 @ApiTags('Auth')
@@ -14,13 +18,13 @@ export class AuthController {
 
   @SkipAuth()
   @Post('sing-in')
-  public async singIn(@Body() dto: any): Promise<any> {
+  public async singIn(@Body() dto: SignInReqDto): Promise<AuthResDto> {
     return await this.authService.signIn(dto);
   }
 
   @SkipAuth()
   @Post('sing-up')
-  public async singUp(@Body() dto: any): Promise<any> {
+  public async singUp(@Body() dto: SignUpReqDto): Promise<AuthResDto> {
     return await this.authService.signUp(dto);
   }
 
@@ -34,7 +38,9 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
-  public async refresh(@CurrentUser() userData: IUserData): Promise<any> {
+  public async refresh(
+    @CurrentUser() userData: IUserData,
+  ): Promise<TokenPairResDto> {
     return await this.authService.refreshToken(userData);
   }
 }

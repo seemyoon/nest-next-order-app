@@ -8,7 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { IsNull } from 'typeorm';
 
 import { UserRepository } from '../../repository/services/user.repository';
-import { UserMapper } from '../../users/services/user.mapper';
+import { UserMapper } from '../../user/services/user.mapper';
 import { SKIP_AUTH } from '../decorators/skip-auth.decorator';
 import { TokenType } from '../models/enums/token-type.enum';
 import { AuthCacheService } from '../services/auth-cache.service';
@@ -43,14 +43,14 @@ export class JwtAccessGuard implements CanActivate {
     if (!payload) {
       throw new UnauthorizedException();
     }
-    // const isAccessTokenExist = await this.authCacheService.isAccessTokenExist(
-    //   payload.userId,
-    //   payload.deviceId,
-    //   accessToken,
-    // );
-    // if (!isAccessTokenExist) {
-    //   throw new UnauthorizedException();
-    // }
+    const isAccessTokenExist = await this.authCacheService.isAccessTokenExist(
+      payload.userId,
+      payload.deviceId,
+      accessToken,
+    );
+    if (!isAccessTokenExist) {
+      throw new UnauthorizedException();
+    }
     const user = await this.userRepository.findOneBy({
       id: payload.userId,
       deleted: IsNull(),

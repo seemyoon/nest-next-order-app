@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 
-import { OrdersService } from './orders.service';
+import { OrdersService } from '../services/orders.service';
 
 @Controller('orders')
 export class OrdersController {

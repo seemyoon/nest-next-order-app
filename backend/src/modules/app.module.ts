@@ -5,7 +5,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { GlobalExceptionFilter } from '../common/filters/global-exception.filter';
 import configuration from '../configs/configuration';
 import { LoggerModule } from './logger/logger.module';
-import { UsersModule } from './users/users.module';
+import { UserModule } from './user/user.module';
 import { OrdersModule } from './orders/orders.module';
 import { ProductsModule } from './products/products.module';
 import { PostgresModule } from './postgres/postgres.module';
@@ -20,7 +20,7 @@ import { RedisModule } from './redis/redis.module';
       isGlobal: true,
     }),
     LoggerModule,
-    UsersModule,
+    UserModule,
     AuthModule,
     OrdersModule,
     RepositoryModule,

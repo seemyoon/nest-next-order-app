@@ -7,7 +7,7 @@ import {
 
 import { RefreshTokenRepository } from '../../repository/services/refresh-token.repository';
 import { UserRepository } from '../../repository/services/user.repository';
-import { UserMapper } from '../../users/services/user.mapper';
+import { UserMapper } from '../../user/services/user.mapper';
 import { TokenType } from '../models/enums/token-type.enum';
 import { TokenService } from '../services/token.service';
 

@@ -18,7 +18,7 @@ export class TokenService {
     this.jwtConfig = configService.get<JwtConfig>('jwt');
   }
 
-  public async generateAuthTokens(payload: JwtPayload): Promise<any> {
+  public async generateAuthTokens(payload: JwtPayload): Promise<ITokenPair> {
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.jwtConfig.accessSecret,
       expiresIn: this.jwtConfig.accessExpireIn,

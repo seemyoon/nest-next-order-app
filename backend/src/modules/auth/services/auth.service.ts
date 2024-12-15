@@ -1,14 +1,17 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 
-import { UserID } from '../../../common/types/entity-ids.type';
-import { UserEntity } from '../../../database/entities/users.entity';
 import { RefreshTokenRepository } from '../../repository/services/refresh-token.repository';
 import { UserRepository } from '../../repository/services/user.repository';
+import { UserMapper } from '../../user/services/user.mapper';
 import { IUserData } from '../interfaces/user-data.interface';
+import { SignInReqDto } from '../models/dto/req/sign-in.req.dto';
+import { SignUpReqDto } from '../models/dto/req/sign-up.req.dto';
+import { AuthResDto } from '../models/dto/res/auth.res.dto';
+import { TokenPairResDto } from '../models/dto/res/token-pair.res.dto';
 import { AuthCacheService } from './auth-cache.service';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
@@ -23,75 +26,71 @@ export class AuthService {
     private readonly passwordService: PasswordService,
   ) {}
 
-  public async signUp(dto: any): Promise<any> {
+  public async signUp(dto: SignUpReqDto): Promise<AuthResDto> {
     await this.isEmailNotExistOrThrow(dto.email);
     const password = await this.passwordService.hashPassword(dto.password, 10);
     const user = await this.userRepository.save(
       this.userRepository.create({ ...dto, password }),
     );
+    const tokens = await this.tokenService.generateAuthTokens({
+      userId: user.id,
+      deviceId: dto.deviceId,
+    });
+    await Promise.all([
+      this.authCacheService.saveToken(
+        tokens.accessToken,
+        user.id,
+        dto.deviceId,
+      ),
+      this.refreshTokenRepository.save(
+        this.refreshTokenRepository.create({
+          user_id: user.id,
+          deviceId: dto.deviceId,
+          refreshToken: tokens.refreshToken,
+        }),
+      ),
+    ]);
 
-    // const tokens = await this.tokenService.generateAuthTokens({
-    //   userId: user.id,
-    //   deviceId: dto.deviceId,
-    // });
-    // await Promise.all([
-    //   this.authCacheService.saveToken(
-    //     tokens.accessToken,
-    //     user.id,
-    //     dto.deviceId,
-    //   ),
-    //   this.refreshTokenRepository.save(
-    //     this.refreshTokenRepository.create({
-    //       user_id: user.id,
-    //       deviceId: dto.deviceId,
-    //       refreshToken: tokens.refreshToken,
-    //     }),
-    //   ),
-    // ]);
-    //
-    // return { user: UserMapper.toResDto(user), tokens };
-    return {} as any;
+    return { user: UserMapper.toResDto(user), tokens };
   }
 
-  public async signIn(dto: any): Promise<any> {
-    // const user = await this.userRepository.findOne({
-    //   where: { email: dto.email },
-    //   select: ['id', 'password', 'isTemporaryPassword'],
-    // });
-    // if (!user) {
-    //   throw new UnauthorizedException('User not found');
-    // }
-    //
-    // const isPasswordValid = await this.passwordService.comparePassword(
-    //   dto.password,
-    //   user.password,
-    // );
-    // if (!isPasswordValid) {
-    //   throw new UnauthorizedException('Password is incorrect');
-    // }
-    //
-    // const tokens = await this.tokenService.generateAuthTokens({
-    //   userId: user.id,
-    //   deviceId: dto.deviceId,
-    // });
-    // await Promise.all([
-    //   this.authCacheService.saveToken(
-    //     tokens.accessToken,
-    //     user.id,
-    //     dto.deviceId,
-    //   ),
-    //   this.refreshTokenRepository.save(
-    //     this.refreshTokenRepository.create({
-    //       user_id: user.id,
-    //       deviceId: dto.deviceId,
-    //       refreshToken: tokens.refreshToken,
-    //     }),
-    //   ),
-    // ]);
-    // const userEntity = await this.userRepository.findOneBy({ id: user.id });
-    //
-    // return { user: UserMapper.toResDto(userEntity), tokens };
-    return {} as any;
+  public async signIn(dto: SignInReqDto): Promise<AuthResDto> {
+    const user = await this.userRepository.findOne({
+      where: { email: dto.email },
+      select: ['id', 'password'],
+    });
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const isPasswordValid = await this.passwordService.comparePassword(
+      dto.password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Password is incorrect');
+    }
+
+    const tokens = await this.tokenService.generateAuthTokens({
+      userId: user.id,
+      deviceId: dto.deviceId,
+    });
+    await Promise.all([
+      this.authCacheService.saveToken(
+        tokens.accessToken,
+        user.id,
+        dto.deviceId,
+      ),
+      this.refreshTokenRepository.save(
+        this.refreshTokenRepository.create({
+          user_id: user.id,
+          deviceId: dto.deviceId,
+          refreshToken: tokens.refreshToken,
+        }),
+      ),
+    ]);
+    const userEntity = await this.userRepository.findOneBy({ id: user.id });
+
+    return { user: UserMapper.toResDto(userEntity), tokens };
   }
 
   public async logOut(userData: IUserData): Promise<void> {
@@ -104,63 +103,33 @@ export class AuthService {
     ]);
   }
 
-  public async refreshToken(userData: IUserData): Promise<any> {
-    // await Promise.all([
-    //   this.authCacheService.deleteToken(userData.userId, userData.deviceId),
-    //   this.refreshTokenRepository.delete({
-    //     user_id: userData.userId,
-    //     deviceId: userData.deviceId,
-    //   }),
-    // ]);
-    // const tokens = await this.tokenService.generateAuthTokens({
-    //   userId: userData.userId,
-    //   deviceId: userData.deviceId,
-    // });
-    // await Promise.all([
-    //   this.authCacheService.saveToken(
-    //     tokens.accessToken,
-    //     userData.userId,
-    //     userData.deviceId,
-    //   ),
-    //   this.refreshTokenRepository.save(
-    //     this.refreshTokenRepository.create({
-    //       user_id: userData.userId,
-    //       deviceId: userData.deviceId,
-    //       refreshToken: tokens.refreshToken,
-    //     }),
-    //   ),
-    // ]);
-    // return tokens;
-    return {} as any;
-  }
-
-  private async returnedChangedPasswordOrThrow(
-    userId: UserID,
-    password: string,
-  ): Promise<UserEntity> {
-    const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new ConflictException('User not found');
-    }
-    // if (password) {
-    //   user.password = password;
-    // }
-
-    await this.userRepository.save(user);
-    return user;
-  }
-
-  private async checkOldPassword(
-    oldPasswordDto: string,
-    passwordDB: string,
-  ): Promise<void> {
-    const isPasswordValid = await this.passwordService.comparePassword(
-      oldPasswordDto,
-      passwordDB,
-    );
-    if (!isPasswordValid) {
-      throw new ConflictException('Password is incorrect');
-    }
+  public async refreshToken(userData: IUserData): Promise<TokenPairResDto> {
+    await Promise.all([
+      this.authCacheService.deleteToken(userData.userId, userData.deviceId),
+      this.refreshTokenRepository.delete({
+        user_id: userData.userId,
+        deviceId: userData.deviceId,
+      }),
+    ]);
+    const tokens = await this.tokenService.generateAuthTokens({
+      userId: userData.userId,
+      deviceId: userData.deviceId,
+    });
+    await Promise.all([
+      this.authCacheService.saveToken(
+        tokens.accessToken,
+        userData.userId,
+        userData.deviceId,
+      ),
+      this.refreshTokenRepository.save(
+        this.refreshTokenRepository.create({
+          user_id: userData.userId,
+          deviceId: userData.deviceId,
+          refreshToken: tokens.refreshToken,
+        }),
+      ),
+    ]);
+    return tokens;
   }
 
   private async isEmailNotExistOrThrow(email: string): Promise<void> {
