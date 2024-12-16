@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 
-import { UserEntity } from '../../../database/entities/users.entity';
 import { UserID } from '../../../common/types/entity-ids.type';
+import { UserEntity } from '../../../database/entities/users.entity';
 import { ListUsersQueryDto } from '../../user/models/req/list-users.query.dto';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class UserRepository extends Repository<UserEntity> {
 
   public async findUser(userId: UserID): Promise<UserEntity> {
     const qb = this.createQueryBuilder('user')
-      .leftJoinAndSelect('user.orders', 'subscribe')
+      .leftJoinAndSelect('user.orders', 'orders')
       .where('user.id = :userId', { userId });
 
     return await qb.getOne();
@@ -23,14 +23,9 @@ export class UserRepository extends Repository<UserEntity> {
     query: ListUsersQueryDto,
   ): Promise<[UserEntity[], number]> {
     const qb = this.createQueryBuilder('user').leftJoinAndSelect(
-      'user.subscribe',
-      'subscribe',
+      'user.orders',
+      'orders',
     );
-
-    if (query.search) {
-      qb.andWhere('user.name ILIKE :search');
-      qb.setParameter('search', `%${query.search}%`);
-    }
 
     qb.take(query.limit);
     qb.skip(query.offset);

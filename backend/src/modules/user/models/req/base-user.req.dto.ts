@@ -24,7 +24,7 @@ export class BaseUserReqDto {
   @IsString()
   @Length(0, 300)
   @Matches(/^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/)
-  email: string;
+  email?: string;
 
   @ApiProperty({ example: '+380631353945' })
   @IsString()

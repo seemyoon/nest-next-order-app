@@ -1,11 +1,11 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { IsNull, Not } from 'typeorm';
 
 import { UserID } from '../../../common/types/entity-ids.type';
 import { UserEntity } from '../../../database/entities/users.entity';
 import { IUserData } from '../../auth/interfaces/user-data.interface';
 import { RefreshTokenRepository } from '../../repository/services/refresh-token.repository';
 import { UserRepository } from '../../repository/services/user.repository';
+import { UserEnum } from '../enum/users.enum';
 import { ListUsersQueryDto } from '../models/req/list-users.query.dto';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class UserService {
     private readonly refreshTokenRepository: RefreshTokenRepository,
   ) {}
 
-  public async getClient(userData: IUserData): Promise<UserEntity> {
+  public async getMe(userData: IUserData): Promise<UserEntity> {
     return await this.userRepository.findUser(userData.userId);
   }
 
@@ -26,6 +26,12 @@ export class UserService {
   }
 
   public async deleteMe(userData: IUserData): Promise<void> {
+    const user = await this.userRepository.findUser(userData.userId);
+
+    if ([UserEnum.ADMIN].includes(user.role)) {
+      throw new ConflictException('You can not delete yourself');
+    }
+
     await this.userRepository.update(
       { id: userData.userId },
       { deleted: new Date() },
@@ -40,17 +46,5 @@ export class UserService {
       throw new ConflictException('User not found');
     }
     return user;
-  }
-
-  private async isDeleted(userId: UserID): Promise<void> {
-    const isDeleted = await this.userRepository.findOneBy({
-      id: userId,
-      deleted: Not(IsNull()),
-    });
-    if (isDeleted) {
-      throw new ConflictException(
-        'You are limited in your options because you are deleted',
-      );
-    }
   }
 }
