@@ -2,24 +2,27 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+import { OrderID, UserID } from '../../common/types/entity-ids.type';
 import { TableNameEnum } from '../enums/table-name.enum';
 import { CreateUpdateModel } from '../model/create-update.model';
-import { OrderID, UserID } from '../../common/types/entity-ids.type';
+import { OrderProductEntity } from './order-product.entity';
 import { UserEntity } from './users.entity';
-import { ProductEntity } from './product.entity';
 
-@Entity(TableNameEnum.ORDERS)
-export class OrdersEntity extends CreateUpdateModel {
+@Entity(TableNameEnum.ORDER)
+export class OrderEntity extends CreateUpdateModel {
   @PrimaryGeneratedColumn('uuid')
   id: OrderID;
 
-  @ManyToMany(() => ProductEntity, (entity) => entity.orders)
-  products?: ProductEntity[];
+  @Column('boolean', { default: false })
+  isReady: boolean;
+
+  @OneToMany(() => OrderProductEntity, (orderProduct) => orderProduct.order)
+  orderProducts: OrderProductEntity[];
 
   @Column()
   user_id: UserID;

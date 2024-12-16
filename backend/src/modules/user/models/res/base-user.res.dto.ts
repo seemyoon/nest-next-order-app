@@ -8,8 +8,9 @@ export class BaseUserResDto {
   id: UserID;
   name: string;
   email: string;
-  @ApiProperty({ enum: UserEnum, example: UserEnum.ADMIN })
+  @ApiProperty({ enum: UserEnum, example: UserEnum.CLIENT })
   role: UserEnum;
+  deleted?: Date;
   created: Date;
   updated: Date;
 }

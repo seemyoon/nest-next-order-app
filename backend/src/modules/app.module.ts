@@ -4,14 +4,14 @@ import { APP_FILTER } from '@nestjs/core';
 
 import { GlobalExceptionFilter } from '../common/filters/global-exception.filter';
 import configuration from '../configs/configuration';
-import { LoggerModule } from './logger/logger.module';
-import { UserModule } from './user/user.module';
-import { OrdersModule } from './orders/orders.module';
-import { ProductsModule } from './products/products.module';
-import { PostgresModule } from './postgres/postgres.module';
 import { AuthModule } from './auth/auth.module';
-import { RepositoryModule } from './repository/repository.module';
+import { LoggerModule } from './logger/logger.module';
+import { OrdersModule } from './orders/orders.module';
+import { PostgresModule } from './postgres/postgres.module';
+import { ProductsModule } from './products/products.module';
 import { RedisModule } from './redis/redis.module';
+import { RepositoryModule } from './repository/repository.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [

@@ -11,7 +11,6 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { UserID } from '../../../common/types/entity-ids.type';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { JwtAccessGuard } from '../../auth/guards/jwt.access.guard';
 import { IUserData } from '../../auth/interfaces/user-data.interface';
 import { ROLES } from '../decorators/roles.decorator';
 import { UserEnum } from '../enum/users.enum';
@@ -28,18 +27,9 @@ import { UserService } from '../services/user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('getClient')
-  public async getClient(
-    @CurrentUser() userData: IUserData,
-  ): Promise<UserResDto> {
-    return UserMapper.toResDto(await this.userService.getClient(userData));
-  }
-
-  @Get('getAdmin')
-  public async getAdmin(
-    @CurrentUser() userData: IUserData,
-  ): Promise<UserResDto> {
-    return UserMapper.toResDto(await this.userService.getAdmin(userData));
+  @Get('getMe')
+  public async getMe(@CurrentUser() userData: IUserData): Promise<UserResDto> {
+    return UserMapper.toResDto(await this.userService.getMe(userData));
   }
 
   @Delete('deleteMe')
@@ -57,6 +47,8 @@ export class UserController {
     return UserMapper.toResDtoList(entities, total, query);
   }
 
+  @UseGuards(RolesGuard)
+  @ROLES(UserEnum.ADMIN)
   @Get(':userId')
   public async getUser(
     @Param('userId', ParseUUIDPipe) userId: UserID,
