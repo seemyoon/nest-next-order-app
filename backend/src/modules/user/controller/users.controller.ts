@@ -1,9 +1,11 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   Param,
   ParseUUIDPipe,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -20,6 +22,7 @@ import { UserResDto } from '../models/res/user.res.dto';
 import { UsersListResDto } from '../models/res/users-list.res.dto';
 import { UserMapper } from '../services/user.mapper';
 import { UserService } from '../services/user.service';
+import { CreateUserReqUserDto } from '../models/req/create-user.req.dto.';
 
 @ApiBearerAuth()
 @ApiTags('Users')
@@ -45,6 +48,15 @@ export class UserController {
   ): Promise<UsersListResDto> {
     const [entities, total] = await this.userService.getUsers(query);
     return UserMapper.toResDtoList(entities, total, query);
+  }
+
+  @UseGuards(RolesGuard)
+  @ROLES(UserEnum.ADMIN)
+  @Post('createUser')
+  public async createUser(
+    @Body() dto: CreateUserReqUserDto,
+  ): Promise<UserResDto> {
+    return UserMapper.toResDto(await this.userService.createUser(dto));
   }
 
   @UseGuards(RolesGuard)

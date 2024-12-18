@@ -1,11 +1,17 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 
 import { UserID } from '../../../common/types/entity-ids.type';
 import { UserEntity } from '../../../database/entities/users.entity';
 import { IUserData } from '../../auth/interfaces/user-data.interface';
+import { PasswordService } from '../../auth/services/password.service';
 import { RefreshTokenRepository } from '../../repository/services/refresh-token.repository';
 import { UserRepository } from '../../repository/services/user.repository';
 import { UserEnum } from '../enum/users.enum';
+import { CreateUserReqUserDto } from '../models/req/create-user.req.dto.';
 import { ListUsersQueryDto } from '../models/req/list-users.query.dto';
 
 @Injectable()
@@ -13,6 +19,7 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
+    private readonly passwordService: PasswordService,
   ) {}
 
   public async getMe(userData: IUserData): Promise<UserEntity> {
@@ -39,6 +46,22 @@ export class UserService {
     await this.refreshTokenRepository.delete({ user_id: userData.userId });
   }
 
+  public async createUser(dto: CreateUserReqUserDto): Promise<UserEntity> {
+    await this.isEmailNotExistOrThrow(dto.email);
+    const password = await this.passwordService.hashPassword(dto.password, 10);
+    await this.userRepository.save(
+      this.userRepository.create({ ...dto, password }),
+    );
+
+    const user = await this.userRepository.findOne({
+      where: { email: dto.email },
+      select: ['id', 'password'],
+    });
+
+    await this.userRepository.save(user);
+    return user;
+  }
+
   public async getUser(userId: UserID): Promise<UserEntity> {
     const user = await this.userRepository.findUser(userId);
 
@@ -46,5 +69,12 @@ export class UserService {
       throw new ConflictException('User not found');
     }
     return user;
+  }
+
+  private async isEmailNotExistOrThrow(email: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({ email });
+    if (user) {
+      throw new BadRequestException('Email already exists');
+    }
   }
 }
