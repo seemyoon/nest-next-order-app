@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 
+import { OrderID } from '../../../common/types/entity-ids.type';
 import { OrderEntity } from '../../../database/entities/order.entity';
 import { IUserData } from '../../auth/interfaces/user-data.interface';
 import { ListOrdersQueryDto } from '../../orders/model/req/list-orders.query.dto';
-import { OrderID, ProductID } from '../../../common/types/entity-ids.type';
-import { ProductEntity } from '../../../database/entities/product.entity';
 
 @Injectable()
 export class OrderRepository extends Repository<OrderEntity> {
@@ -15,19 +14,21 @@ export class OrderRepository extends Repository<OrderEntity> {
 
   public async findOrder(orderId: OrderID): Promise<OrderEntity> {
     const qb = this.createQueryBuilder('order');
-    qb.leftJoinAndSelect('orders.product', 'orders');
-
-    qb.where('product.id = :orderId', { orderId });
+    qb.leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('order.orderProducts', 'orderProduct')
+      .leftJoinAndSelect('orderProduct.product', 'product')
+      .where('order.id = :orderId', { orderId });
     return await qb.getOne();
   }
 
   public async findOrders(
     query: ListOrdersQueryDto,
   ): Promise<[OrderEntity[], number]> {
-    const qb = this.createQueryBuilder('user').leftJoinAndSelect(
-      'orders.product',
-      'orders',
-    );
+    const qb = this.createQueryBuilder('order');
+    qb.leftJoinAndSelect(
+      'order.orderProducts',
+      'orderProduct',
+    ).leftJoinAndSelect('orderProduct.product', 'product');
 
     qb.take(query.limit);
     qb.skip(query.offset);
@@ -39,6 +40,13 @@ export class OrderRepository extends Repository<OrderEntity> {
     userData: IUserData,
     query: ListOrdersQueryDto,
   ): Promise<[OrderEntity[], number]> {
-    return await this.findAndCount();
+    const qb = this.createQueryBuilder('order');
+    qb.leftJoinAndSelect('order.orderProducts', 'orderProduct')
+      .leftJoinAndSelect('orderProduct.product', 'product')
+      .where('order.user_id = :userId', { userId: userData.userId })
+      .take(query.limit)
+      .skip(query.offset);
+
+    return await qb.getManyAndCount();
   }
 }

@@ -24,7 +24,6 @@ export class ProductRepository extends Repository<ProductEntity> {
 
   public async findProductById(productId: ProductID): Promise<ProductEntity> {
     const qb = this.createQueryBuilder('product');
-    qb.leftJoinAndSelect('product.orders', 'product');
 
     qb.where('product.id = :productId', { productId });
     return await qb.getOne();
@@ -32,7 +31,6 @@ export class ProductRepository extends Repository<ProductEntity> {
 
   public async findProductByName(name: string): Promise<ProductEntity> {
     const qb = this.createQueryBuilder('product');
-    qb.leftJoinAndSelect('product.orders', 'product');
 
     qb.where('product.name = :name', { name });
     return await qb.getOne();

@@ -27,4 +27,11 @@ export class ProductService {
   public async getProduct(id: ProductID): Promise<ProductEntity> {
     return await this.productRepository.findProductById(id);
   }
+
+  public async delete(productID: ProductID): Promise<void> {
+    const productToDelete =
+      await this.productRepository.findProductById(productID);
+
+    await this.productRepository.remove(productToDelete);
+  }
 }

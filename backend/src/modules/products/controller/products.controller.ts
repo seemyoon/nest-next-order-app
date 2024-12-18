@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -29,7 +30,7 @@ export class ProductController {
 
   @UseGuards(RolesGuard)
   @ROLES(UserEnum.ADMIN)
-  @Get('getProduct')
+  @Get('getProducts')
   public async getProducts(
     @Query() query: ListProductsQueryDto,
   ): Promise<ProductsListResDto> {
@@ -55,5 +56,14 @@ export class ProductController {
     return ProductMapper.toResDto(
       await this.productService.getProduct(productId),
     );
+  }
+
+  @UseGuards(RolesGuard)
+  @ROLES(UserEnum.ADMIN)
+  @Delete(':productId')
+  public async deleteMe(
+    @Param('productId', ParseUUIDPipe) productId: ProductID,
+  ): Promise<void> {
+    await this.productService.delete(productId);
   }
 }

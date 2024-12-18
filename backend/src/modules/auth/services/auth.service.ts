@@ -66,11 +66,15 @@ export class AuthService {
   public async signIn(dto: SignInReqDto): Promise<AuthResDto> {
     const user = await this.userRepository.findOne({
       where: { email: dto.email },
-      select: ['id', 'password'],
+      select: ['id', 'password', 'deleted'],
     });
     if (!user) {
       throw new UnauthorizedException();
     }
+    if (user.deleted) {
+      await this.userRepository.update({ id: user.id }, { deleted: null });
+    }
+    console.log(user.deleted);
     const isPasswordValid = await this.passwordService.comparePassword(
       dto.password,
       user.password,

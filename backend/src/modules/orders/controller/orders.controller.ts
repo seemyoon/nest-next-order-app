@@ -51,7 +51,7 @@ export class OrdersController {
     return OrderMapper.toResDtoList(entities, total, query);
   }
 
-  @Post()
+  @Post('createOrder')
   public async createOrder(
     @CurrentUser() userData: IUserData,
     @Body() dto: BaseOrderReqDto,
@@ -61,17 +61,17 @@ export class OrdersController {
     );
   }
 
+  @Post('orderIsDone/:orderId')
+  public async orderIsDone(
+    @Param('orderId', ParseUUIDPipe) orderId: OrderID,
+  ): Promise<void> {
+    await this.ordersService.orderIsDone(orderId);
+  }
+
   @Get(':orderId')
   public async getOrder(
     @Param('orderId', ParseUUIDPipe) orderId: OrderID,
   ): Promise<OrderResDto> {
     return OrderMapper.toResDto(await this.ordersService.getOrder(orderId));
-  }
-
-  @Post(':orderId')
-  public async orderIsDone(
-    @Param('orderId', ParseUUIDPipe) orderId: OrderID,
-  ): Promise<void> {
-    await this.ordersService.orderIsDone(orderId);
   }
 }

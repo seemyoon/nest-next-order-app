@@ -7,10 +7,9 @@ import { OrdersListResDto } from '../model/res/orders-list.res.dto';
 
 export class OrderMapper {
   private static mapOrderProduct(orderProduct: OrderProductEntity): any {
-    //todo typing
     return {
-      productId: orderProduct.product.id,
-      productName: orderProduct.product.name,
+      productId: orderProduct.product?.id || null,
+      productName: orderProduct.product?.name || 'Unk nown',
       quantity: orderProduct.quantity,
     };
   }
@@ -18,7 +17,9 @@ export class OrderMapper {
   public static toResDto(order: OrderEntity): OrderResDto {
     return {
       id: order.id,
-      products: order.orderProducts.map(this.mapOrderProduct),
+      products: (order.orderProducts || []).map((op) =>
+        OrderMapper.mapOrderProduct(op),
+      ),
       isReady: order.isReady,
       user: order.user ? UserMapper.toResDto(order.user) : null,
       created: order.createdAt,

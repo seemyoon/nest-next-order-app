@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 
@@ -50,40 +51,35 @@ export class OrdersService {
         const product = await this.productRepository.findProductByName(
           productDto.name,
         );
-
         if (!product) {
           throw new NotFoundException(
-            `Product with ID ${productDto.name} not found`,
+            `Product with name ${productDto.name} not found`,
           );
         }
-
         return { product, quantity: productDto.quantity };
       }),
     );
 
-    const order = this.orderRepository.create({
-      user,
-    });
-
+    const order = this.orderRepository.create({ user });
     await this.orderRepository.save(order);
 
-    const orderProducts = products.map((prod) => {
-      return this.orderProductRepository.create({
-        order_id: order.id,
-        product_id: prod.product.id,
+    const orderProducts = products.map((prod) =>
+      this.orderProductRepository.create({
+        order: order,
+        product: prod.product,
         quantity: prod.quantity,
-      });
-    });
+      }),
+    );
 
     await this.orderProductRepository.save(orderProducts);
 
-    return order;
+    return await this.getOrder(order.id);
   }
 
   public async getOrder(orderId: OrderID): Promise<OrderEntity> {
-    const order = await this.orderRepository.findOneBy({ id: orderId });
+    const order = await this.orderRepository.findOrder(orderId);
     if (!order) {
-      throw new ConflictException('Order not found');
+      throw new NotFoundException('Order not found');
     }
     return order;
   }
@@ -95,5 +91,5 @@ export class OrdersService {
     }
     order.isReady = true;
     await this.orderRepository.save(order);
-  } //todo :orderId (the client will not be able to look over his order, but the admin can) +
+  }
 }

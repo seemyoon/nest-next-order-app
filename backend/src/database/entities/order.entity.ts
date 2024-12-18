@@ -21,7 +21,9 @@ export class OrderEntity extends CreateUpdateModel {
   @Column('boolean', { default: false })
   isReady: boolean;
 
-  @OneToMany(() => OrderProductEntity, (orderProduct) => orderProduct.order)
+  @OneToMany(() => OrderProductEntity, (orderProduct) => orderProduct.order, {
+    cascade: true,
+  })
   orderProducts: OrderProductEntity[];
 
   @Column()

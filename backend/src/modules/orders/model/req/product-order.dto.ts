@@ -3,8 +3,8 @@ import { IsInt, IsString, Min } from 'class-validator';
 
 export class ProductOrderDto {
   @ApiProperty({
-    example: 'product1-id',
-    description: 'ID of the product in the order.',
+    example: 'name of product',
+    description: 'name of the product in the order.',
   })
   @IsString()
   name: string;
