@@ -15,6 +15,7 @@ import { TokenPairResDto } from '../models/dto/res/token-pair.res.dto';
 import { AuthCacheService } from './auth-cache.service';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
+import { UserEnum } from '../../user/enum/users.enum';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +28,14 @@ export class AuthService {
   ) {}
 
   public async signUp(dto: SignUpReqDto): Promise<AuthResDto> {
+    if (dto.role === UserEnum.ADMIN) {
+      const adminExists = await this.userRepository.count({
+        where: { role: UserEnum.ADMIN },
+      });
+      if (adminExists > 0) {
+        throw new BadRequestException('Admin role already exists');
+      }
+    }
     await this.isEmailNotExistOrThrow(dto.email);
     const password = await this.passwordService.hashPassword(dto.password, 10);
     const user = await this.userRepository.save(

@@ -16,7 +16,6 @@ export class RolesGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest();
     const user = req.res.locals.user;
-
     if (!user) {
       throw new ForbiddenException('Unauthorized');
     }
@@ -26,6 +25,8 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
     );
 
+    console.log('Required roles:', requiredRoles);
+    console.log('User role:', user.role);
     if (!requiredRoles) {
       return true;
     }

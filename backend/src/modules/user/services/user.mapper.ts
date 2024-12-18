@@ -33,6 +33,7 @@ export class UserMapper {
       userId: user.id,
       deviceId: jwtPayload.deviceId,
       email: user.email,
+      role: user.role,
     };
   }
 }

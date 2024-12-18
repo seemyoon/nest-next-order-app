@@ -5,7 +5,7 @@ import { DataSource } from 'typeorm';
 
 import configuration from './src/configs/configuration';
 
-dotenv.config();
+dotenv.config({ path: './environments/local.env' });
 
 const config = configuration().database;
 

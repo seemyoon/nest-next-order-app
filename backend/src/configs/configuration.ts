@@ -1,9 +1,6 @@
 import * as process from 'node:process';
 
-// import * as dotenv from 'dotenv';
 import { Config } from './config.type';
-
-// dotenv.config({ path: './environments/local.env' });
 
 export default (): Config => ({
   app: {

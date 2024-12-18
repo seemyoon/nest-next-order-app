@@ -24,6 +24,14 @@ export class OrderRepository extends Repository<OrderEntity> {
   public async findOrders(
     query: ListOrdersQueryDto,
   ): Promise<[OrderEntity[], number]> {
+    const qb = this.createQueryBuilder('user').leftJoinAndSelect(
+      'orders.product',
+      'orders',
+    );
+
+    qb.take(query.limit);
+    qb.skip(query.offset);
+
     return await this.findAndCount();
   }
 

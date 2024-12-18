@@ -18,7 +18,7 @@ export class OrderMapper {
   public static toResDto(order: OrderEntity): OrderResDto {
     return {
       id: order.id,
-      products: order.orderProducts.map(this.mapOrderProduct), // Преобразуем товары заказа
+      products: order.orderProducts.map(this.mapOrderProduct),
       isReady: order.isReady,
       user: order.user ? UserMapper.toResDto(order.user) : null,
       created: order.createdAt,
