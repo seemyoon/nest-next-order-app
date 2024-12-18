@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 
 import { OrderID } from '../../../common/types/entity-ids.type';
 import { OrderEntity } from '../../../database/entities/order.entity';
@@ -12,8 +12,12 @@ export class OrderRepository extends Repository<OrderEntity> {
     super(OrderEntity, dataSource.manager);
   }
 
-  public async findOrder(orderId: OrderID): Promise<OrderEntity> {
-    const qb = this.createQueryBuilder('order');
+  public async findOrder(
+    orderId: OrderID,
+    em?: EntityManager,
+  ): Promise<OrderEntity> {
+    const repo = em ? em.getRepository(OrderEntity) : this;
+    const qb = repo.createQueryBuilder('order');
     qb.leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('order.orderProducts', 'orderProduct')
       .leftJoinAndSelect('orderProduct.product', 'product')

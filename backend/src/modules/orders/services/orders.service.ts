@@ -3,9 +3,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
 
 import { OrderID } from '../../../common/types/entity-ids.type';
 import { OrderEntity } from '../../../database/entities/order.entity';
+import { OrderProductEntity } from '../../../database/entities/order-product.entity';
 import { IUserData } from '../../auth/interfaces/user-data.interface';
 import { OrderRepository } from '../../repository/services/order.repository';
 import { OrderProductRepository } from '../../repository/services/order-product.repository';
@@ -21,6 +24,8 @@ export class OrdersService {
     private readonly orderProductRepository: OrderProductRepository,
     private readonly productRepository: ProductRepository,
     private readonly userRepository: UserRepository,
+    @InjectEntityManager()
+    private readonly entityManager: EntityManager,
   ) {}
 
   public async getOrders(
@@ -40,43 +45,49 @@ export class OrdersService {
     userData: IUserData,
     dto: BaseOrderReqDto,
   ): Promise<OrderEntity> {
-    const user = await this.userRepository.findUser(userData.userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    return await this.entityManager.transaction('SERIALIZABLE', async (em) => {
+      const user = await this.userRepository.findUser(userData.userId, em);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      const orderRepository = em.getRepository(OrderEntity);
 
-    const products = await Promise.all(
-      dto.products.map(async (productDto) => {
-        const product = await this.productRepository.findProductByName(
-          productDto.name,
-        );
-        if (!product) {
-          throw new NotFoundException(
-            `Product with name ${productDto.name} not found`,
+      const products = await Promise.all(
+        dto.products.map(async (productDto) => {
+          const product = await this.productRepository.findProductByName(
+            productDto.name,
           );
-        }
-        return { product, quantity: productDto.quantity };
-      }),
-    );
+          if (!product) {
+            throw new NotFoundException(
+              `Product with name ${productDto.name} not found`,
+            );
+          }
+          return { product, quantity: productDto.quantity };
+        }),
+      );
 
-    const order = this.orderRepository.create({ user });
-    await this.orderRepository.save(order);
+      const order = orderRepository.create({ user });
+      await orderRepository.save(order);
 
-    const orderProducts = products.map((prod) =>
-      this.orderProductRepository.create({
-        order: order,
-        product: prod.product,
-        quantity: prod.quantity,
-      }),
-    );
+      const orderProductRepository = em.getRepository(OrderProductEntity);
+      const orderProducts = products.map((product) =>
+        orderProductRepository.create({
+          order: order,
+          product: product.product,
+          quantity: product.quantity,
+        }),
+      );
+      await orderProductRepository.save(orderProducts);
 
-    await this.orderProductRepository.save(orderProducts);
-
-    return await this.getOrder(order.id);
+      return await this.getOrder(order.id, em);
+    });
   }
 
-  public async getOrder(orderId: OrderID): Promise<OrderEntity> {
-    const order = await this.orderRepository.findOrder(orderId);
+  public async getOrder(
+    orderId: OrderID,
+    em?: EntityManager,
+  ): Promise<OrderEntity> {
+    const order = await this.orderRepository.findOrder(orderId, em);
     if (!order) {
       throw new NotFoundException('Order not found');
     }

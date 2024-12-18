@@ -17,12 +17,12 @@ import { IUserData } from '../../auth/interfaces/user-data.interface';
 import { ROLES } from '../decorators/roles.decorator';
 import { UserEnum } from '../enum/users.enum';
 import { RolesGuard } from '../guard/roles.guard';
+import { CreateUserReqUserDto } from '../models/req/create-user.req.dto.';
 import { ListUsersQueryDto } from '../models/req/list-users.query.dto';
 import { UserResDto } from '../models/res/user.res.dto';
 import { UsersListResDto } from '../models/res/users-list.res.dto';
 import { UserMapper } from '../services/user.mapper';
 import { UserService } from '../services/user.service';
-import { CreateUserReqUserDto } from '../models/req/create-user.req.dto.';
 
 @ApiBearerAuth()
 @ApiTags('Users')

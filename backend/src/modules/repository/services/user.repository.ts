@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 
 import { UserID } from '../../../common/types/entity-ids.type';
 import { UserEntity } from '../../../database/entities/users.entity';
@@ -11,8 +11,13 @@ export class UserRepository extends Repository<UserEntity> {
     super(UserEntity, dataSource.manager);
   }
 
-  public async findUser(userId: UserID): Promise<UserEntity> {
-    const qb = this.createQueryBuilder('user')
+  public async findUser(
+    userId: UserID,
+    em?: EntityManager,
+  ): Promise<UserEntity> {
+    const repo = em ? em.getRepository(UserEntity) : this;
+    const qb = repo
+      .createQueryBuilder('user')
       .leftJoinAndSelect('user.orders', 'orders')
       .where('user.id = :userId', { userId });
 
