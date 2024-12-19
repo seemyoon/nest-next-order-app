@@ -31,7 +31,7 @@ export class UserEntity extends CreateUpdateModel {
   role: UserEnum;
 
   @OneToMany(() => OrderEntity, (order) => order.user)
-  orders: OrderEntity[];
+  orders?: OrderEntity[];
 
   @OneToMany(() => RefreshTokenEntity, (entity) => entity.user)
   refreshTokens?: RefreshTokenEntity[];
