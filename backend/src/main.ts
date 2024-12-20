@@ -22,6 +22,10 @@ async function bootstrap() {
     })
     .build();
 
+  app.enableCors({
+    origin: 'http://localhost:5300',
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

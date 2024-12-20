@@ -47,7 +47,7 @@ describe(UserController.name, () => {
     });
   });
   describe('getUsers', () => {
-    it('should return users', async () => {
+    it('should return login', async () => {
       const query: ListUsersQueryDto = { limit: 10, offset: 0 };
       const userEntities: UserEntity[] = [UserMock.userEntity()];
       const totalUsers = 20;

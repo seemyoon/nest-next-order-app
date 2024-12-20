@@ -41,5 +41,5 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: ['.eslintrc.js', '**/*.generated.ts', '**/migrations/*.ts'],
+  ignorePatterns: ['eslint.config.mjs', '**/*.generated.ts', '**/migrations/*.ts'],
 };
