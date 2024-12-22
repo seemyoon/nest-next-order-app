@@ -1,0 +1,8 @@
+{
+  "name": "nest-next-order-app",
+  "version": "0.0.1",
+  "scripts": {
+    "docker:up": "docker compose -f docker-compose.dev.yml up --build",
+    "docker:down": "docker compose -f docker-compose.dev.yml down"
+  }
+}

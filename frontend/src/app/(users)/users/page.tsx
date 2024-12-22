@@ -1,7 +1,7 @@
 import React from 'react'
 
 const UsersPage = async () => {
-  const allUsers = await fetch('http://localhost:3200/user').then((value) =>
+  const allUsers = await fetch('http://localhost/api/users').then((value) =>
     value.json(),
   )
   console.log(allUsers)

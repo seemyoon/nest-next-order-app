@@ -1,5 +1,5 @@
 services:
-  order-management-postgres:
+  order-management-db:
     image: postgres:16.1
     ports:
       - '${POSTGRES_PORT:-5432}:5432'
@@ -7,8 +7,7 @@ services:
       POSTGRES_USER: '${POSTGRES_USER:-postgresuser}'
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-postgrespassword}'
       POSTGRES_DB: '${POSTGRES_DB:-order-app}'
-    volumes:
-      - ./order-management-db:/ var/lib/postgresql/order-management
+    restart: on-failure
 
   order-management-redis:
     image: redis:7.2.3
