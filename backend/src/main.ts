@@ -44,12 +44,14 @@ async function bootstrap() {
   const appConfig = configService.get<AppConfig>('app');
 
   await app.listen(appConfig.port, () => {
-    console.log(
-      `Server is running on ${HTTP}${appConfig.host}:${appConfig.port}`,
-    );
-    console.log(
-      `Swagger is running  on ${HTTP}${appConfig.host}:${appConfig.port}/docs`,
-    );
+    //   console.log(
+    //       `Server is running on ${HTTP}${appConfig.host}:${appConfig.port}`,
+    //     );
+    //     console.log(
+    //       `Swagger is running  on ${HTTP}${appConfig.host}:${appConfig.port}/docs`,
+    //     );
+    console.log(`Server is running on ${HTTP}${appConfig.host}/api`);
+    console.log(`Swagger is running  on ${HTTP}${appConfig.host}/api/docs`);
   });
 }
 

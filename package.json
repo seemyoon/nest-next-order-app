@@ -1,6 +1,9 @@
 {
   "name": "nest-next-order-app",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "repository": "https://github.com/seemyoon/nest-next-order-app.git",
+  "author": "Oleksandr Semenets",
+  "license": "UNLICENSED",
   "scripts": {
     "docker:up": "docker compose -f docker-compose.dev.yml up --build",
     "docker:down": "docker compose -f docker-compose.dev.yml down"

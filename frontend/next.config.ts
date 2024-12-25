@@ -1,8 +1,5 @@
 import type { NextConfig } from 'next'
 
-const nextConfig: NextConfig = {
-  output: 'standalone',
-  distDir: '../client',
-}
+const nextConfig: NextConfig = {}
 
 export default nextConfig

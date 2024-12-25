@@ -21,10 +21,10 @@
     "start:db": "docker compose -f ../docker-compose.local.yml up --build",
     "prepare": "husky",
     "typeorm": "typeorm-ts-node-commonjs --dataSource ./ormconfig.ts",
-    "migration:create": "typeorm migration:create src/database/migrations/$npm_config_name",
-    "migration:generate": "cross-var npm run typeorm -- migration:generate src/database/migrations/$npm_config_name",
-    "migration:revert": "npm run typeorm -- migration:revert",
-    "migration:run": "npm run typeorm -- migration:run"
+    "migration:create": "typeorm migration:create ./src/database/migrations/$name",
+    "migration:generate": "cross-var yarn run typeorm -- migration:generate ./src/database/migrations/$name",
+    "migration:revert": "yarn run typeorm -- migration:revert",
+    "migration:run": "yarn run typeorm -- migration:run"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.8",

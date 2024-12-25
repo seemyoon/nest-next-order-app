@@ -3,7 +3,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import React from 'react'
 
-import MenuComponent from '@/src/components/MenuComponent'
+import MenuComponent from '@/components/MenuComponent'
 
 export const metadata: Metadata = {
   title: 'Create Next App',

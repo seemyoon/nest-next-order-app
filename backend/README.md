@@ -29,3 +29,13 @@ $ yarn run test:e2e
 # test coverage
 $ yarn run test:cov
 ```
+
+## Migrations
+
+```bash
+# generate migrations 
+$ name=add_base_entities yarn run migration:generate
+
+# run migrations
+$ yarn run migration:run
+```
