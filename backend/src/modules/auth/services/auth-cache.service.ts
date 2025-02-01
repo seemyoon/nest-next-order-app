@@ -16,34 +16,26 @@ export class AuthCacheService {
     this.jwtConfig = this.configService.get<JwtConfig>('jwt');
   }
 
-  public async saveToken(
-    token: string,
-    userId: string,
-    deviceId: string,
-  ): Promise<void> {
-    const key = this.getKey(userId, deviceId);
+  public async saveToken(token: string, userId: string): Promise<void> {
+    const key = this.getKey(userId);
 
     await this.redisService.deleteByKey(key);
     await this.redisService.addOneToSet(key, token);
     await this.redisService.expire(key, this.jwtConfig.accessExpireIn);
   }
 
-  public async isAccessTokenExist(
-    userId: UserID,
-    deviceId: string,
-    token: string,
-  ): Promise<any> {
-    const key = this.getKey(userId, deviceId);
+  public async isAccessTokenExist(userId: UserID, token: string): Promise<any> {
+    const key = this.getKey(userId);
     const set = await this.redisService.sMembers(key);
     return set.includes(token);
   }
 
-  public async deleteToken(userId: string, deviceId: string): Promise<void> {
-    const key = this.getKey(userId, deviceId);
+  public async deleteToken(userId: string): Promise<void> {
+    const key = this.getKey(userId);
     await this.redisService.deleteByKey(key);
   }
 
-  protected getKey(userId: string, deviceId: string): string {
-    return `ACCESS_TOKEN:${userId}:${deviceId}`;
+  protected getKey(userId: string): string {
+    return `ACCESS_TOKEN:${userId}`;
   }
 }

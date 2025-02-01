@@ -12,7 +12,6 @@ export class UserMock {
     return {
       userId: 'testUserId' as UserID,
       email: 'test@mail.com',
-      deviceId: 'testDeviceId',
       role: UserEnum.CLIENT,
       ...(properties || {}),
     };

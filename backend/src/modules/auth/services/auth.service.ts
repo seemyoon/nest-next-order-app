@@ -15,7 +15,6 @@ import { TokenPairResDto } from '../models/dto/res/token-pair.res.dto';
 import { AuthCacheService } from './auth-cache.service';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
-import { UserEnum } from '../../user/enum/users.enum';
 
 @Injectable()
 export class AuthService {
@@ -28,14 +27,6 @@ export class AuthService {
   ) {}
 
   public async signUp(dto: SignUpReqDto): Promise<AuthResDto> {
-    if (dto.role === UserEnum.ADMIN) {
-      const adminExists = await this.userRepository.count({
-        where: { role: UserEnum.ADMIN },
-      });
-      if (adminExists > 0) {
-        throw new BadRequestException('Admin role already exists');
-      }
-    }
     await this.isEmailNotExistOrThrow(dto.email);
     const password = await this.passwordService.hashPassword(dto.password, 10);
     const user = await this.userRepository.save(
@@ -43,18 +34,16 @@ export class AuthService {
     );
     const tokens = await this.tokenService.generateAuthTokens({
       userId: user.id,
-      deviceId: dto.deviceId,
     });
+
+    const quantityPersons = await this.userRepository.findAndCount();
+    if (quantityPersons[1] === 0) {
+    }
     await Promise.all([
-      this.authCacheService.saveToken(
-        tokens.accessToken,
-        user.id,
-        dto.deviceId,
-      ),
+      this.authCacheService.saveToken(tokens.accessToken, user.id),
       this.refreshTokenRepository.save(
         this.refreshTokenRepository.create({
           user_id: user.id,
-          deviceId: dto.deviceId,
           refreshToken: tokens.refreshToken,
         }),
       ),
@@ -74,7 +63,6 @@ export class AuthService {
     if (user.deleted) {
       await this.userRepository.update({ id: user.id }, { deleted: null });
     }
-    console.log(user.deleted);
     const isPasswordValid = await this.passwordService.comparePassword(
       dto.password,
       user.password,
@@ -85,18 +73,12 @@ export class AuthService {
 
     const tokens = await this.tokenService.generateAuthTokens({
       userId: user.id,
-      deviceId: dto.deviceId,
     });
     await Promise.all([
-      this.authCacheService.saveToken(
-        tokens.accessToken,
-        user.id,
-        dto.deviceId,
-      ),
+      this.authCacheService.saveToken(tokens.accessToken, user.id),
       this.refreshTokenRepository.save(
         this.refreshTokenRepository.create({
           user_id: user.id,
-          deviceId: dto.deviceId,
           refreshToken: tokens.refreshToken,
         }),
       ),
@@ -108,36 +90,28 @@ export class AuthService {
 
   public async logOut(userData: IUserData): Promise<void> {
     await Promise.all([
-      this.authCacheService.deleteToken(userData.userId, userData.deviceId),
+      this.authCacheService.deleteToken(userData.userId),
       this.refreshTokenRepository.delete({
         user_id: userData.userId,
-        deviceId: userData.deviceId,
       }),
     ]);
   }
 
   public async refreshToken(userData: IUserData): Promise<TokenPairResDto> {
     await Promise.all([
-      this.authCacheService.deleteToken(userData.userId, userData.deviceId),
+      this.authCacheService.deleteToken(userData.userId),
       this.refreshTokenRepository.delete({
         user_id: userData.userId,
-        deviceId: userData.deviceId,
       }),
     ]);
     const tokens = await this.tokenService.generateAuthTokens({
       userId: userData.userId,
-      deviceId: userData.deviceId,
     });
     await Promise.all([
-      this.authCacheService.saveToken(
-        tokens.accessToken,
-        userData.userId,
-        userData.deviceId,
-      ),
+      this.authCacheService.saveToken(tokens.accessToken, userData.userId),
       this.refreshTokenRepository.save(
         this.refreshTokenRepository.create({
           user_id: userData.userId,
-          deviceId: userData.deviceId,
           refreshToken: tokens.refreshToken,
         }),
       ),

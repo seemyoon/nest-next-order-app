@@ -45,7 +45,6 @@ export class JwtAccessGuard implements CanActivate {
     }
     const isAccessTokenExist = await this.authCacheService.isAccessTokenExist(
       payload.userId,
-      payload.deviceId,
       accessToken,
     );
     if (!isAccessTokenExist) {
@@ -58,7 +57,7 @@ export class JwtAccessGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException();
     }
-    request.res.locals.user = UserMapper.toIUserData(user, payload);
+    request.res.locals.user = UserMapper.toIUserData(user);
     return true;
   }
 }

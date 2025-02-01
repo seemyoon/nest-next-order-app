@@ -41,7 +41,7 @@ export class JwtRefreshGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException();
     }
-    request.res.locals.user = UserMapper.toIUserData(user, payload);
+    request.res.locals.user = UserMapper.toIUserData(user);
     return true;
   }
 }

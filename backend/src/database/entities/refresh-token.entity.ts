@@ -19,9 +19,6 @@ export class RefreshTokenEntity extends CreateUpdateModel {
   @Column('text')
   refreshToken: string;
 
-  @Column('text')
-  deviceId: string;
-
   @Column()
   user_id: UserID;
   @ManyToOne(() => UserEntity, (entity) => entity.refreshTokens, {
